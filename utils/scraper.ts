@@ -11,6 +11,7 @@ export async function scrapeAmazon(keyword: string) {
     // formantado a query, substituindo espacos por +
     const query = keyword.trim().replace(/\s+/g, "+");
     const url = `https://www.amazon.com/s?k=${query}`;
+    console.log(`[scraper] Fetching: ${url}`);
 
     // Fazendo a requisicao HTTP
     const { data: html } = await axios.get(url, {
@@ -21,14 +22,37 @@ export async function scrapeAmazon(keyword: string) {
             "Accept-Language": "en-US,en;q=0.9",
         },
     });
+    console.log(`[scraper] HTML length: ${html.length}`);
 
     // Carrega o html em um DOM virtual
     const dom = new JSDOM(html);
     const document = dom.window.document;
 
-    // Seleciona os items pela presenca de data-asin o ID do produto
+    // Seleciona todos os elementos de produto pelo atributo data-asin
     const items = Array.from(
-        document.querySelectorAll("div.s-main-slot > div[data-asin]")
+        document.querySelectorAll('div[data-component-type="s-search-result"]')
     );
+    console.log(`[scraper] Found items: ${items.length}`);
 
+    // Extrai os campos de cada item
+    const results = items
+        .map((item) => {
+            const title = item.querySelector("h2 span")?.textContent?.trim();
+            const rating = item.querySelector("span.a-icon-alt")?.textContent?.trim();
+            const reviews = item.querySelector("span.a-size-base")?.textContent?.trim();
+            const image = item.querySelector("img")?.getAttribute("src");
+
+            if (title && rating && reviews && image) {
+                return { title, rating, reviews, image };
+            }
+        })
+        .filter(Boolean) as {
+            title: string;
+            rating: string;
+            reviews: string;
+            image: string;
+        }[];
+
+    console.log(`[scraper] Parsed results count: ${results.length}`);
+    return results;
 }

@@ -1,24 +1,56 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+document.getElementById("searchBtn")?.addEventListener("click", async () => {
+  const keywordInput = document.getElementById("keyword") as HTMLInputElement | null;
+  const resultDiv = document.getElementById("results") as HTMLDivElement | null;
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+  if (!keywordInput || !resultDiv) {
+    throw new Error("Elementos do DOM não encontrados");
+  }
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+  const keyword = keywordInput.value.trim();
+  if (!keyword) {
+    resultDiv.innerHTML = "<p>Digite um termo para buscar.</p>";
+    return;
+  }
+
+  resultDiv.innerHTML = "<p>Carregando...</p>";
+
+  try {
+    const res = await fetch(
+      `http://localhost:3031/api/scrape?keyword=${encodeURIComponent(keyword)}`
+    );
+
+    if (!res.ok) {
+      resultDiv.innerHTML = `<p>Erro ${res.status}: ${res.statusText}</p>`;
+      return;
+    }
+
+    const text = await res.text();
+    if (!text) {
+      resultDiv.innerHTML = "<p>Resposta vazia do servidor.</p>";
+      return;
+    }
+
+    const data  = JSON.parse(text) as {
+      title: string;
+      rating: string;
+      reviews: string;
+      image: string;
+    }[];
+
+    resultDiv.innerHTML = data
+      .map(
+        (item) => `
+      <div class="result-item">
+        <img src="${item.image}" alt="${item.title}" />
+        <h3>${item.title}</h3>
+        <p>${item.rating}</p>
+        <p>${item.reviews}</p>
+      </div>
+    `
+      )
+      .join("");
+  } catch (err) {
+    console.error("Erro no frontend:", err);
+    resultDiv.innerHTML = "<p>Ocorreu um erro ao buscar resultados.</p>";
+  }
+});
