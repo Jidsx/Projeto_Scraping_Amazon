@@ -8,5 +8,15 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.4",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/jsdom": "^21.1.7",
+    "axios": "^1.8.4",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsdom": "^26.1.0"
   }
 }
