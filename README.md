@@ -15,7 +15,6 @@ O HTML da página é analisado com JSDOM para extrair informações relevantes.
 Os dados são enviados de volta ao frontend para exibição.
 
 ## Demonstração
-![alt text](image-1.png)
 
 ## Tecnologias
 - **Bun**: runtime JavaScript/TypeScript 
